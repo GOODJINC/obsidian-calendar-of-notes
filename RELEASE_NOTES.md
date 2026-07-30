@@ -1,21 +1,25 @@
-# Calendar of Notes 0.2.0
+# Calendar of Notes 0.3.0
 
-This feature release makes date matching more flexible while keeping Calendar of Notes compact and local-first.
+This release addresses the automated Community Plugins review and strengthens compatibility, privacy, and release provenance.
 
-## What's new
+## Review fixes
 
-- Choose `YYYY-MM-DD`, `YYYY.MM.DD`, `YYYY_MM_DD`, or `YYYYMMDD` for filename dates.
-- Configure multiple frontmatter date properties, one per line.
-- Include or exclude notes by vault-relative folder or tag.
-- Match child folders and hierarchical child tags automatically.
-- Open notes in the current tab, a new tab, or a new split.
-- Use Ctrl-click or Command-click to override the setting and open a new tab.
+- Calendar leaves are no longer detached when the plugin unloads, so users keep their chosen sidebar location.
+- The declared minimum Obsidian version now matches every API used by the plugin.
+- Settings are searchable through Obsidian's declarative settings API on 1.13+, with the same settings available on older supported versions.
+- The unnecessary frontmatter type assertion and the `builtin-modules` dependency were removed.
+- All `!important` declarations were replaced with scoped selectors.
 
-## Compatibility and reliability
+## Privacy and performance
 
-- Existing `0.1.x` single-property and custom-regex settings migrate automatically.
-- Invalid calendar dates continue to be ignored.
-- Exclusion filters take priority over inclusion filters.
-- Automated coverage now includes 28 tests for date parsing, filename formats, multiple properties, filters, settings migration, opening behavior, and the note index.
+- Vault-wide Markdown enumeration now starts only when the calendar is opened or restored.
+- After initial indexing, only changed files are updated through Vault and Metadata Cache events.
+- The README now clearly explains the metadata access required to build the calendar.
 
-Calendar of Notes remains read-only: it does not create, rename, edit, or delete notes.
+## Release security
+
+- GitHub Actions now creates cryptographic provenance attestations for `main.js`, `manifest.json`, and `styles.css`.
+- CI now runs the Obsidian submission validator and dedicated CSS compatibility checks.
+- The configured note opening location now also applies to week-view previews.
+
+The Obsidian submission validator passes with 0 errors and 0 warnings. Calendar of Notes remains local-only and read-only.

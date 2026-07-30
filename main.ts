@@ -12,6 +12,7 @@ export default class CalendarOfNotesPlugin extends Plugin {
   index = new NoteDateIndex(this.app, () => this.settings);
   private settingsTimer: number | null = null;
   private pendingIndexRebuild = false;
+  private indexReady = false;
 
   async onload(): Promise<void> {
     await this.loadSettings();
@@ -33,25 +34,30 @@ export default class CalendarOfNotesPlugin extends Plugin {
     });
 
     this.app.workspace.onLayoutReady(() => {
-      this.index.rebuild();
       this.registerEvent(this.app.vault.on("create", (file) => this.handleCreate(file)));
       this.registerEvent(this.app.vault.on("delete", (file) => this.handleDelete(file)));
       this.registerEvent(this.app.vault.on("rename", (file, oldPath) => this.handleRename(file, oldPath)));
-      this.registerEvent(this.app.metadataCache.on("changed", (file) => this.index.indexFile(file)));
-      this.registerEvent(this.app.metadataCache.on("resolved", () => this.index.rebuild()));
+      this.registerEvent(this.app.metadataCache.on("changed", (file) => {
+        if (this.indexReady) this.index.indexFile(file);
+      }));
+      this.registerEvent(this.app.metadataCache.on("resolved", () => this.rebuildIndexIfReady()));
+      if (this.app.workspace.getLeavesOfType(CALENDAR_VIEW_TYPE).length > 0) this.ensureIndex();
     });
   }
 
   onunload(): void {
     if (this.settingsTimer !== null) window.clearTimeout(this.settingsTimer);
-    this.app.workspace.detachLeavesOfType(CALENDAR_VIEW_TYPE);
   }
 
   async activateView(): Promise<void> {
-    let leaf = this.app.workspace.getLeavesOfType(CALENDAR_VIEW_TYPE)[0];
+    this.ensureIndex();
+    const leaf = this.app.workspace.getLeavesOfType(CALENDAR_VIEW_TYPE)[0];
     if (!leaf) {
-      leaf = this.app.workspace.getRightLeaf(false) ?? this.app.workspace.getLeaf(true);
-      await leaf.setViewState({ type: CALENDAR_VIEW_TYPE, active: true });
+      await this.app.workspace.ensureSideLeaf(CALENDAR_VIEW_TYPE, "right", {
+        active: true,
+        reveal: true
+      });
+      return;
     }
     await this.app.workspace.revealLeaf(leaf);
   }
@@ -71,7 +77,7 @@ export default class CalendarOfNotesPlugin extends Plugin {
   async updateSettings(changes: Partial<CalendarOfNotesSettings>, rebuildIndex: boolean): Promise<void> {
     Object.assign(this.settings, changes);
     await this.saveData(this.settings);
-    if (rebuildIndex) this.index.rebuild();
+    if (rebuildIndex) this.rebuildIndexIfReady();
     this.refreshViews();
   }
 
@@ -82,7 +88,7 @@ export default class CalendarOfNotesPlugin extends Plugin {
     this.settingsTimer = window.setTimeout(() => {
       this.settingsTimer = null;
       void this.saveData(this.settings);
-      if (this.pendingIndexRebuild) this.index.rebuild();
+      if (this.pendingIndexRebuild) this.rebuildIndexIfReady();
       this.pendingIndexRebuild = false;
       this.refreshViews();
     }, 350);
@@ -99,14 +105,24 @@ export default class CalendarOfNotesPlugin extends Plugin {
   }
 
   private handleCreate(file: TAbstractFile): void {
-    if (file instanceof TFile && file.extension === "md") this.index.indexFile(file);
+    if (this.indexReady && file instanceof TFile && file.extension === "md") this.index.indexFile(file);
   }
 
   private handleDelete(file: TAbstractFile): void {
-    if (file instanceof TFile && file.extension === "md") this.index.removeFile(file);
+    if (this.indexReady && file instanceof TFile && file.extension === "md") this.index.removeFile(file);
   }
 
   private handleRename(file: TAbstractFile, oldPath: string): void {
-    if (file instanceof TFile && file.extension === "md") this.index.renameFile(file, oldPath);
+    if (this.indexReady && file instanceof TFile && file.extension === "md") this.index.renameFile(file, oldPath);
+  }
+
+  private ensureIndex(): void {
+    if (this.indexReady) return;
+    this.indexReady = true;
+    this.index.rebuild();
+  }
+
+  private rebuildIndexIfReady(): void {
+    if (this.indexReady) this.index.rebuild();
   }
 }

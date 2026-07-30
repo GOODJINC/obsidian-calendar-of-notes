@@ -1,7 +1,29 @@
-import { Notice, PluginSettingTab, Setting, type App } from "obsidian";
-import { t, type MessageKey } from "./i18n";
+import {
+  Notice,
+  PluginSettingTab,
+  Setting,
+  requireApiVersion,
+  type App,
+  type SettingDefinition,
+  type SettingDefinitionItem
+} from "obsidian";
+import { t } from "./i18n";
 import type CalendarOfNotesPlugin from "../main";
-import type { FilenameDateFormat, FilenameDateLocation } from "./types";
+import type { CalendarOfNotesSettings, FilenameDateFormat, FilenameDateLocation } from "./types";
+
+type SettingKey = keyof CalendarOfNotesSettings;
+
+const INDEX_SETTING_KEYS = new Set<SettingKey>([
+  "dateSource",
+  "propertyNames",
+  "filenameDateLocation",
+  "filenameDateFormat",
+  "filenamePattern",
+  "includedFolders",
+  "excludedFolders",
+  "includedTags",
+  "excludedTags"
+]);
 
 export class CalendarOfNotesSettingTab extends PluginSettingTab {
   constructor(app: App, private readonly plugin: CalendarOfNotesPlugin) {
@@ -9,247 +31,352 @@ export class CalendarOfNotesSettingTab extends PluginSettingTab {
   }
 
   display(): void {
-    const { containerEl } = this;
+    this.renderLegacySettings();
+  }
+
+  getSettingDefinitions(): SettingDefinitionItem<SettingKey>[] {
     const settings = this.plugin.settings;
-    containerEl.empty();
-    containerEl.addClass("calendar-of-notes-settings");
+    const isPropertyEnabled = () => settings.dateSource !== "filename";
+    const isFilenameEnabled = () => settings.dateSource !== "property";
+    const isBuiltInFilenameFormat = () => isFilenameEnabled() && settings.filenameDateFormat !== "custom";
+    const isCustomFilenameFormat = () => isFilenameEnabled() && settings.filenameDateFormat === "custom";
 
-    this.addSection("sectionGeneral", "sectionGeneralDesc");
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsLanguage"))
-      .setDesc(t(settings, "settingsLanguageDesc"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({ auto: t(settings, "auto"), en: t(settings, "english"), ko: t(settings, "korean") })
-        .setValue(settings.language)
-        .onChange(async (value) => {
-          await this.plugin.updateSettings({ language: value as typeof settings.language }, false);
-          this.display();
-        }));
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsDefaultView"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({ month: t(settings, "monthView"), week: t(settings, "weekView"), year: t(settings, "yearView") })
-        .setValue(settings.defaultView)
-        .onChange((value) => this.plugin.updateSettings({ defaultView: value as typeof settings.defaultView }, false)));
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsStartup"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({ today: t(settings, "today"), "last-viewed": t(settings, "lastViewed") })
-        .setValue(settings.startupDate)
-        .onChange((value) => this.plugin.updateSettings({ startupDate: value as typeof settings.startupDate }, false)));
-
-    this.addSection("sectionMatching", "sectionMatchingDesc");
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsDateSource"))
-      .setDesc(t(settings, "settingsDateSourceDesc"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({
-          "property-first": t(settings, "propertyFirst"),
-          filename: t(settings, "filenameOnly"),
-          property: t(settings, "propertyOnly"),
-          both: t(settings, "both")
-        })
-        .setValue(settings.dateSource)
-        .onChange(async (value) => {
-          await this.plugin.updateSettings({ dateSource: value as typeof settings.dateSource }, true);
-          this.display();
-        }));
-
-    if (settings.dateSource !== "filename") {
-      new Setting(containerEl)
-        .setName(t(settings, "settingsProperties"))
-        .setDesc(t(settings, "settingsPropertiesDesc"))
-        .addTextArea((text) => {
-          text.setPlaceholder("date\ncreated\npublished");
-          text.setValue(settings.propertyNames.join("\n"));
-          text.inputEl.rows = 3;
-          text.onChange((value) => this.plugin.scheduleSettingsUpdate({
-            propertyNames: splitLines(value)
-          }, true));
-        });
-    }
-
-    if (settings.dateSource !== "property") {
-      new Setting(containerEl)
-        .setName(t(settings, "settingsFilenameFormat"))
-        .setDesc(t(settings, "settingsFilenameFormatDesc"))
-        .addDropdown((dropdown) => dropdown
-          .addOptions({
-            "yyyy-mm-dd": "YYYY-MM-DD",
-            "yyyy.mm.dd": "YYYY.MM.DD",
-            "yyyy_mm_dd": "YYYY_MM_DD",
-            yyyymmdd: "YYYYMMDD",
-            custom: t(settings, "dateCustom")
-          })
-          .setValue(settings.filenameDateFormat)
-          .onChange(async (value) => {
-            await this.plugin.updateSettings({ filenameDateFormat: value as FilenameDateFormat }, true);
-            this.display();
-          }));
-    }
-
-    if (settings.dateSource !== "property" && settings.filenameDateFormat !== "custom") {
-      new Setting(containerEl)
-        .setName(t(settings, "settingsFilenameLocation"))
-        .setDesc(`${t(settings, "settingsFilenameLocationDesc")} ${t(settings, "example")}: ${filenameExample(settings.filenameDateFormat, settings.filenameDateLocation)}`)
-        .addDropdown((dropdown) => dropdown
-          .addOptions({
-            start: t(settings, "dateAtStart"),
-            anywhere: t(settings, "dateAnywhere"),
-            entire: t(settings, "dateEntireName")
-          })
-          .setValue(settings.filenameDateLocation)
-          .onChange(async (value) => {
-            await this.plugin.updateSettings({ filenameDateLocation: value as FilenameDateLocation }, true);
-            this.display();
-          }));
-    }
-
-    if (settings.dateSource !== "property" && settings.filenameDateFormat === "custom") {
-      new Setting(containerEl)
-        .setName(t(settings, "settingsPattern"))
-        .setDesc(t(settings, "settingsPatternDesc"))
-        .addTextArea((text) => {
-          text.setValue(settings.filenamePattern);
-          text.inputEl.rows = 2;
-          text.inputEl.addClass("calendar-of-notes-pattern-input");
-          text.onChange((value) => {
-            try {
-              new RegExp(value);
-              text.inputEl.removeClass("is-invalid");
-              this.plugin.scheduleSettingsUpdate({ filenamePattern: value }, true);
-            } catch {
-              text.inputEl.addClass("is-invalid");
-              new Notice(t(settings, "invalidPattern"));
+    return [
+      {
+        type: "group",
+        heading: t(settings, "sectionGeneral"),
+        cls: "calendar-of-notes-settings-group",
+        items: [
+          {
+            name: t(settings, "settingsLanguage"),
+            desc: t(settings, "settingsLanguageDesc"),
+            control: {
+              type: "dropdown",
+              key: "language",
+              defaultValue: "auto",
+              options: { auto: t(settings, "auto"), en: t(settings, "english"), ko: t(settings, "korean") }
             }
-          });
-        });
+          },
+          {
+            name: t(settings, "settingsDefaultView"),
+            control: {
+              type: "dropdown",
+              key: "defaultView",
+              defaultValue: "month",
+              options: { month: t(settings, "monthView"), week: t(settings, "weekView"), year: t(settings, "yearView") }
+            }
+          },
+          {
+            name: t(settings, "settingsStartup"),
+            control: {
+              type: "dropdown",
+              key: "startupDate",
+              defaultValue: "today",
+              options: { today: t(settings, "today"), "last-viewed": t(settings, "lastViewed") }
+            }
+          }
+        ]
+      },
+      {
+        type: "group",
+        heading: t(settings, "sectionMatching"),
+        cls: "calendar-of-notes-settings-group",
+        items: [
+          {
+            name: t(settings, "settingsDateSource"),
+            desc: t(settings, "settingsDateSourceDesc"),
+            control: {
+              type: "dropdown",
+              key: "dateSource",
+              defaultValue: "property-first",
+              options: {
+                "property-first": t(settings, "propertyFirst"),
+                filename: t(settings, "filenameOnly"),
+                property: t(settings, "propertyOnly"),
+                both: t(settings, "both")
+              }
+            }
+          },
+          {
+            name: t(settings, "settingsProperties"),
+            desc: t(settings, "settingsPropertiesDesc"),
+            visible: isPropertyEnabled,
+            control: {
+              type: "textarea",
+              key: "propertyNames",
+              defaultValue: "date",
+              placeholder: "date\ncreated\npublished",
+              rows: 3
+            }
+          },
+          {
+            name: t(settings, "settingsFilenameFormat"),
+            desc: t(settings, "settingsFilenameFormatDesc"),
+            visible: isFilenameEnabled,
+            control: {
+              type: "dropdown",
+              key: "filenameDateFormat",
+              defaultValue: "yyyy-mm-dd",
+              options: {
+                "yyyy-mm-dd": "YYYY-MM-DD",
+                "yyyy.mm.dd": "YYYY.MM.DD",
+                "yyyy_mm_dd": "YYYY_MM_DD",
+                yyyymmdd: "YYYYMMDD",
+                custom: t(settings, "dateCustom")
+              }
+            }
+          },
+          {
+            name: t(settings, "settingsFilenameLocation"),
+            desc: `${t(settings, "settingsFilenameLocationDesc")} ${t(settings, "example")}: ${filenameExample(settings.filenameDateFormat, settings.filenameDateLocation)}`,
+            visible: isBuiltInFilenameFormat,
+            control: {
+              type: "dropdown",
+              key: "filenameDateLocation",
+              defaultValue: "start",
+              options: {
+                start: t(settings, "dateAtStart"),
+                anywhere: t(settings, "dateAnywhere"),
+                entire: t(settings, "dateEntireName")
+              }
+            }
+          },
+          {
+            name: t(settings, "settingsPattern"),
+            desc: t(settings, "settingsPatternDesc"),
+            visible: isCustomFilenameFormat,
+            control: {
+              type: "textarea",
+              key: "filenamePattern",
+              defaultValue: "^(?<date>\\d{4}-\\d{2}-\\d{2})(?:\\s|$)",
+              rows: 2,
+              validate: (value) => {
+                try {
+                  new RegExp(value);
+                  return undefined;
+                } catch {
+                  return t(settings, "invalidPattern");
+                }
+              }
+            }
+          }
+        ]
+      },
+      {
+        type: "group",
+        heading: t(settings, "sectionFilters"),
+        cls: "calendar-of-notes-settings-group",
+        items: [
+          listSetting(settings, "settingsIncluded", "settingsIncludedDesc", "includedFolders", "Journal\nProjects"),
+          listSetting(settings, "settingsExcluded", "settingsExcludedDesc", "excludedFolders", "Templates\nArchive"),
+          listSetting(settings, "settingsIncludedTags", "settingsIncludedTagsDesc", "includedTags", "project\ncalendar"),
+          listSetting(settings, "settingsExcludedTags", "settingsExcludedTagsDesc", "excludedTags", "archive\nprivate")
+        ]
+      },
+      {
+        type: "group",
+        heading: t(settings, "sectionBehavior"),
+        cls: "calendar-of-notes-settings-group",
+        items: [
+          {
+            name: t(settings, "settingsClick"),
+            control: {
+              type: "dropdown",
+              key: "clickBehavior",
+              defaultValue: "smart",
+              options: { smart: t(settings, "smart"), list: t(settings, "alwaysList"), select: t(settings, "selectOnly") }
+            }
+          },
+          {
+            name: t(settings, "settingsList"),
+            control: {
+              type: "dropdown",
+              key: "listDisplay",
+              defaultValue: "popup",
+              options: { below: t(settings, "below"), popup: t(settings, "popup"), hidden: t(settings, "hidden") }
+            }
+          },
+          {
+            name: t(settings, "settingsSort"),
+            control: {
+              type: "dropdown",
+              key: "noteSort",
+              defaultValue: "name",
+              options: { name: t(settings, "name"), modified: t(settings, "modified"), created: t(settings, "created"), path: t(settings, "path") }
+            }
+          },
+          {
+            name: t(settings, "settingsOpenLocation"),
+            desc: t(settings, "settingsOpenLocationDesc"),
+            control: {
+              type: "dropdown",
+              key: "openLocation",
+              defaultValue: "current",
+              options: {
+                current: t(settings, "openCurrent"),
+                tab: t(settings, "openTab"),
+                split: t(settings, "openSplit")
+              }
+            }
+          }
+        ]
+      },
+      {
+        type: "group",
+        heading: t(settings, "sectionDisplay"),
+        cls: "calendar-of-notes-settings-group",
+        items: [
+          {
+            name: t(settings, "settingsWeekStart"),
+            control: {
+              type: "dropdown",
+              key: "weekStart",
+              defaultValue: "locale",
+              options: { locale: t(settings, "localeDefault"), sunday: t(settings, "sunday"), monday: t(settings, "monday") }
+            }
+          },
+          {
+            name: t(settings, "settingsAdjacent"),
+            control: { type: "toggle", key: "showAdjacentMonthDays", defaultValue: true }
+          },
+          {
+            name: t(settings, "settingsPaths"),
+            control: { type: "toggle", key: "showNotePaths", defaultValue: false }
+          }
+        ]
+      }
+    ];
+  }
+
+  getControlValue(key: string): unknown {
+    const settingKey = key as SettingKey;
+    const value = this.plugin.settings[settingKey];
+    return Array.isArray(value) ? value.join("\n") : value;
+  }
+
+  async setControlValue(key: string, value: unknown): Promise<void> {
+    const settingKey = key as SettingKey;
+    const nextValue = isListSetting(settingKey) ? splitLines(typeof value === "string" ? value : "") : value;
+    const changes = { [settingKey]: nextValue } as Partial<CalendarOfNotesSettings>;
+    const rebuildIndex = INDEX_SETTING_KEYS.has(settingKey);
+
+    if (rebuildIndex) this.plugin.scheduleSettingsUpdate(changes, true);
+    else await this.plugin.updateSettings(changes, false);
+
+    if (settingKey === "language" || settingKey === "dateSource" || settingKey === "filenameDateFormat" || settingKey === "filenameDateLocation") {
+      if (requireApiVersion("1.13.0")) this.update();
+      else this.renderLegacySettings();
+    } else if (requireApiVersion("1.13.0")) {
+      this.refreshDomState();
     }
-
-    this.addSection("sectionFilters", "sectionFiltersDesc");
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsIncluded"))
-      .setDesc(t(settings, "settingsIncludedDesc"))
-      .addTextArea((text) => {
-        text.setValue(settings.includedFolders.join("\n"));
-        text.inputEl.rows = 3;
-        text.onChange((value) => this.plugin.scheduleSettingsUpdate({ includedFolders: splitLines(value) }, true));
-      });
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsExcluded"))
-      .setDesc(t(settings, "settingsExcludedDesc"))
-      .addTextArea((text) => {
-        text.setValue(settings.excludedFolders.join("\n"));
-        text.inputEl.rows = 4;
-        text.onChange((value) => this.plugin.scheduleSettingsUpdate({
-          excludedFolders: splitLines(value)
-        }, true));
-      });
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsIncludedTags"))
-      .setDesc(t(settings, "settingsIncludedTagsDesc"))
-      .addTextArea((text) => {
-        text.setPlaceholder("project\ncalendar");
-        text.setValue(settings.includedTags.join("\n"));
-        text.inputEl.rows = 3;
-        text.onChange((value) => this.plugin.scheduleSettingsUpdate({ includedTags: splitLines(value) }, true));
-      });
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsExcludedTags"))
-      .setDesc(t(settings, "settingsExcludedTagsDesc"))
-      .addTextArea((text) => {
-        text.setPlaceholder("archive\nprivate");
-        text.setValue(settings.excludedTags.join("\n"));
-        text.inputEl.rows = 3;
-        text.onChange((value) => this.plugin.scheduleSettingsUpdate({ excludedTags: splitLines(value) }, true));
-      });
-
-    this.addSection("sectionBehavior", "sectionBehaviorDesc");
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsClick"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({ smart: t(settings, "smart"), list: t(settings, "alwaysList"), select: t(settings, "selectOnly") })
-        .setValue(settings.clickBehavior)
-        .onChange((value) => this.plugin.updateSettings({ clickBehavior: value as typeof settings.clickBehavior }, false)));
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsList"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({ below: t(settings, "below"), popup: t(settings, "popup"), hidden: t(settings, "hidden") })
-        .setValue(settings.listDisplay)
-        .onChange((value) => this.plugin.updateSettings({ listDisplay: value as typeof settings.listDisplay }, false)));
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsSort"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({ name: t(settings, "name"), modified: t(settings, "modified"), created: t(settings, "created"), path: t(settings, "path") })
-        .setValue(settings.noteSort)
-        .onChange((value) => this.plugin.updateSettings({ noteSort: value as typeof settings.noteSort }, false)));
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsOpenLocation"))
-      .setDesc(t(settings, "settingsOpenLocationDesc"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({
-          current: t(settings, "openCurrent"),
-          tab: t(settings, "openTab"),
-          split: t(settings, "openSplit")
-        })
-        .setValue(settings.openLocation)
-        .onChange((value) => this.plugin.updateSettings({ openLocation: value as typeof settings.openLocation }, false)));
-
-    this.addSection("sectionDisplay", "sectionDisplayDesc");
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsWeekStart"))
-      .addDropdown((dropdown) => dropdown
-        .addOptions({ locale: t(settings, "localeDefault"), sunday: t(settings, "sunday"), monday: t(settings, "monday") })
-        .setValue(settings.weekStart)
-        .onChange((value) => this.plugin.updateSettings({ weekStart: value as typeof settings.weekStart }, false)));
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsAdjacent"))
-      .addToggle((toggle) => toggle
-        .setValue(settings.showAdjacentMonthDays)
-        .onChange((value) => this.plugin.updateSettings({ showAdjacentMonthDays: value }, false)));
-
-    new Setting(containerEl)
-      .setName(t(settings, "settingsPaths"))
-      .addToggle((toggle) => toggle
-        .setValue(settings.showNotePaths)
-        .onChange((value) => this.plugin.updateSettings({ showNotePaths: value }, false)));
   }
 
-  private addSection(titleKey: MessageKey, descriptionKey: MessageKey): void {
-    const heading = new Setting(this.containerEl)
-      .setName(t(this.plugin.settings, titleKey))
-      .setDesc(t(this.plugin.settings, descriptionKey))
-      .setHeading();
-    heading.settingEl.addClass("calendar-of-notes-settings-section");
+  private renderLegacySettings(): void {
+    this.containerEl.empty();
+    this.containerEl.addClass("calendar-of-notes-settings");
+
+    for (const item of this.getSettingDefinitions()) {
+      if (!("type" in item) || item.type !== "group" || !isVisible(item.visible)) continue;
+      if (item.heading) {
+        const heading = new Setting(this.containerEl).setName(item.heading).setHeading();
+        heading.settingEl.addClass("calendar-of-notes-settings-section");
+      }
+      for (const definition of item.items ?? []) {
+        if (("type" in definition && definition.type === "page") ||
+            !isVisible(definition.visible) || !("control" in definition) || !definition.control) continue;
+        this.renderLegacyControl(definition);
+      }
+    }
   }
+
+  private renderLegacyControl(definition: SettingDefinition<SettingKey>): void {
+    if (!("control" in definition) || !definition.control) return;
+    const control = definition.control;
+    const row = new Setting(this.containerEl).setName(definition.name);
+    if (definition.desc) row.setDesc(definition.desc);
+    const value = this.getControlValue(control.key);
+
+    if (control.type === "dropdown") {
+      row.addDropdown((dropdown) => dropdown
+        .addOptions(control.options)
+        .setValue(typeof value === "string" ? value : String(control.defaultValue ?? ""))
+        .onChange((next) => this.setControlValue(control.key, next)));
+      return;
+    }
+    if (control.type === "toggle") {
+      row.addToggle((toggle) => toggle
+        .setValue(typeof value === "boolean" ? value : control.defaultValue ?? false)
+        .onChange((next) => this.setControlValue(control.key, next)));
+      return;
+    }
+    if (control.type === "textarea") {
+      row.addTextArea((text) => {
+        text.setValue(typeof value === "string" ? value : control.defaultValue ?? "");
+        if (control.placeholder) text.setPlaceholder(control.placeholder);
+        if (control.rows) text.inputEl.rows = control.rows;
+        text.onChange(async (next) => {
+          const error = await control.validate?.(next);
+          if (error) {
+            new Notice(error);
+            return;
+          }
+          await this.setControlValue(control.key, next);
+        });
+      });
+      return;
+    }
+    if (control.type === "text") {
+      row.addText((text) => {
+        text.setValue(typeof value === "string" ? value : control.defaultValue ?? "");
+        if (control.placeholder) text.setPlaceholder(control.placeholder);
+        text.onChange(async (next) => {
+          const error = await control.validate?.(next);
+          if (error) {
+            new Notice(error);
+            return;
+          }
+          await this.setControlValue(control.key, next);
+        });
+      });
+    }
+  }
+}
+
+function listSetting(
+  settings: CalendarOfNotesSettings,
+  nameKey: "settingsIncluded" | "settingsExcluded" | "settingsIncludedTags" | "settingsExcludedTags",
+  descKey: "settingsIncludedDesc" | "settingsExcludedDesc" | "settingsIncludedTagsDesc" | "settingsExcludedTagsDesc",
+  key: "includedFolders" | "excludedFolders" | "includedTags" | "excludedTags",
+  placeholder: string
+): SettingDefinition<SettingKey> {
+  return {
+    name: t(settings, nameKey),
+    desc: t(settings, descKey),
+    control: { type: "textarea", key, defaultValue: "", placeholder, rows: 3 }
+  };
+}
+
+function isListSetting(key: SettingKey): key is "propertyNames" | "includedFolders" | "excludedFolders" | "includedTags" | "excludedTags" {
+  return ["propertyNames", "includedFolders", "excludedFolders", "includedTags", "excludedTags"].includes(key);
 }
 
 function splitLines(value: string): string[] {
   return [...new Set(value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean))];
 }
 
-function filenameExample(format: Exclude<FilenameDateFormat, "custom">, location: FilenameDateLocation): string {
+function filenameExample(format: FilenameDateFormat, location: FilenameDateLocation): string {
   const date = {
     "yyyy-mm-dd": "2026-07-30",
     "yyyy.mm.dd": "2026.07.30",
     "yyyy_mm_dd": "2026_07_30",
-    yyyymmdd: "20260730"
+    yyyymmdd: "20260730",
+    custom: "2026-07-30"
   }[format];
   if (location === "start") return `${date} Note title`;
   if (location === "anywhere") return `Meeting ${date} notes`;
   return date;
+}
+
+function isVisible(value: boolean | (() => boolean) | undefined): boolean {
+  return typeof value === "function" ? value() : value !== false;
 }

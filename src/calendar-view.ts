@@ -145,7 +145,7 @@ export class CalendarOfNotesView extends ItemView {
       const entries = this.host.index.get(date).slice(0, 3);
       for (const entry of entries) {
         const button = preview.createEl("button", { text: entry.file.basename });
-        button.onclick = () => void this.app.workspace.getLeaf(false).openFile(entry.file);
+        button.onclick = (event) => openNote(this.app, this.host.settings, entry.file, event.metaKey || event.ctrlKey);
       }
       const remaining = this.host.index.count(date) - entries.length;
       if (remaining > 0) preview.createDiv({ cls: "calendar-of-notes-more", text: `+${remaining}` });

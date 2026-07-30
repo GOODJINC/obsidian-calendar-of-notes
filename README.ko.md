@@ -4,6 +4,8 @@
 
 Obsidian의 기존 노트를 날짜별로 탐색할 수 있는 빠르고 간결한 로컬 캘린더입니다.
 
+Obsidian 1.7.2 이상이 필요합니다.
+
 Calendar of Notes는 파일명이나 노트 속성 또는 두 기준 모두에서 날짜를 찾습니다. 날짜를 선택해 노트를 바로 열거나, 사이드바를 벗어나지 않고 해당 날짜의 모든 노트를 확인할 수 있습니다.
 
 > [!NOTE]
@@ -135,7 +137,11 @@ Calendar of Notes는 Vault 내부에서 로컬로 동작합니다.
 - Vault 외부 파일 접근 없음
 - 노트 내용 수정 및 삭제 없음
 
+캘린더를 처음 열거나 복원할 때 날짜 인덱스를 만들기 위해 Markdown 파일 목록을 확인합니다. 노트 본문은 읽지 않고 파일명과 캐시된 frontmatter·태그 메타데이터만 사용합니다. 최초 인덱싱 후에는 Vault 및 Metadata Cache 이벤트를 통해 변경된 파일만 갱신합니다. 폴더와 태그 필터는 로컬에서 적용됩니다.
+
 플러그인 설정은 Obsidian의 표준 플러그인 데이터 API로 저장됩니다.
+
+릴리스 파일은 GitHub Actions에서 빌드하고 암호학적 attestation을 생성합니다. 내려받은 파일은 `gh attestation verify main.js -R GOODJINC/obsidian-calendar-of-notes`와 같은 명령으로 출처를 검증할 수 있습니다.
 
 ## 개발
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { App, TFile } from "obsidian";
+import { TFile, type App } from "obsidian";
 import { NoteDateIndex } from "./note-index";
 import { DEFAULT_SETTINGS, type CalendarOfNotesSettings } from "./types";
 
@@ -10,7 +10,12 @@ interface FakeCache {
 
 function file(path: string): TFile {
   const name = path.slice(path.lastIndexOf("/") + 1).replace(/\.md$/, "");
-  return { path, basename: name, extension: "md", stat: { ctime: 1, mtime: 1, size: 1 } } as TFile;
+  return Object.assign(new TFile(), {
+    path,
+    basename: name,
+    extension: "md",
+    stat: { ctime: 1, mtime: 1, size: 1 }
+  });
 }
 
 describe("NoteDateIndex", () => {

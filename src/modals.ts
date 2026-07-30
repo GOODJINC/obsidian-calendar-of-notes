@@ -43,7 +43,7 @@ export class JumpToDateModal extends Modal {
       .setName(t(this.settings, "jumpToDate"))
       .addText((text) => {
         input = text.inputEl;
-        text.setPlaceholder("YYYY-MM-DD").setValue(value).onChange((next) => {
+        text.setPlaceholder("2026-07-30").setValue(value).onChange((next) => {
           const formatted = formatDateInput(next);
           value = formatted;
           if (formatted !== next) {

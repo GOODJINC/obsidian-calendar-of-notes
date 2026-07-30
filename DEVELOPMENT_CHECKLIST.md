@@ -16,6 +16,11 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Add common filename date formats, multiple date properties, folder/tag filters, and note open locations.
 - [x] Add migration coverage so existing `0.1.x` settings continue to work.
 - [x] Publish and verify the `0.2.0` feature release.
+- [x] Address all blocking Community Plugins review errors reported for `0.2.0`.
+- [x] Add dual declarative/legacy settings support and pass the Obsidian validator with zero findings.
+- [x] Remove CSS `!important` declarations and add automated CSS compatibility checks.
+- [x] Add artifact attestations for all release assets.
+- [ ] Publish and verify the `0.3.0` review-fix release.
 
 ## Local setup
 
@@ -95,7 +100,7 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Confirm `id` remains `calendar-of-notes`; plugin IDs cannot be changed after release.
 - [x] Confirm the display name and plugin ID are unique in the current community plugin registry.
 - [x] Choose and document Obsidian `1.5.0` as the supported minimum version.
-- [x] Keep `manifest.json`, `package.json`, and `versions.json` aligned through `0.2.0`.
+- [x] Keep `manifest.json`, `package.json`, and `versions.json` aligned through `0.3.0`.
 - [x] Produce a minified production `main.js` with `npm run build`.
 - [x] Create the GitHub `0.1.0` release with a tag matching the manifest version.
 - [x] Attach `main.js`, `manifest.json`, and `styles.css` to the GitHub release.

@@ -4,6 +4,8 @@ English | [한국어](https://github.com/GOODJINC/obsidian-calendar-of-notes/blo
 
 A fast, compact, and local-first calendar for browsing existing Obsidian notes by date.
 
+Requires Obsidian 1.7.2 or later.
+
 Calendar of Notes indexes dates from filenames, note properties, or both. Select a day to open its note directly or review every matching note without leaving the sidebar.
 
 > [!NOTE]
@@ -135,7 +137,11 @@ Calendar of Notes works locally inside your vault.
 - No access to files outside the vault
 - No note content modification or deletion
 
+When the calendar is first opened or restored, the plugin enumerates Markdown files to build its date index. It reads filenames and cached frontmatter/tag metadata, not note bodies. After the initial index, Vault and Metadata Cache events update only the changed files. Folder and tag filters are applied locally.
+
 Plugin settings are stored through Obsidian's standard plugin data API.
+
+Release assets are built and cryptographically attested by GitHub Actions. For example, downloaded assets can be verified with `gh attestation verify main.js -R GOODJINC/obsidian-calendar-of-notes`.
 
 ## Development
 

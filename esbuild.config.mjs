@@ -1,13 +1,13 @@
 import esbuild from "esbuild";
+import { builtinModules } from "node:module";
 import process from "node:process";
-import builtins from "builtin-modules";
 
 const production = process.argv[2] === "production";
 
 const context = await esbuild.context({
   entryPoints: ["main.ts"],
   bundle: true,
-  external: ["obsidian", "electron", "@codemirror/*", "@lezer/*", ...builtins],
+  external: ["obsidian", "electron", "@codemirror/*", "@lezer/*", ...builtinModules],
   format: "cjs",
   target: "es2018",
   logLevel: "info",

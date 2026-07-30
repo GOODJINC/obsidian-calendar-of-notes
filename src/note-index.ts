@@ -103,7 +103,7 @@ export class NoteDateIndex extends Events {
   }
 
   private extractPropertyDates(file: TFile): Set<string> {
-    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter as Record<string, unknown> | undefined;
+    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter;
     return extractPropertyDates(frontmatter, this.getSettings().propertyNames);
   }
 

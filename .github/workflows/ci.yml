@@ -33,3 +33,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Check CSS compatibility
+        run: npm run lint:css
+
+      - name: Validate Obsidian submission
+        run: npm run validate:obsidian

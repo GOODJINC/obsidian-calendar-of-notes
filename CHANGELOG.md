@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-30
+
+### Added
+
+- Search-indexed declarative settings for Obsidian 1.13 and later, with an equivalent legacy settings fallback.
+- GitHub artifact attestations for every release asset.
+- Obsidian submission validation and CSS compatibility checks in CI and release workflows.
+
+### Changed
+
+- Build the vault-wide date index lazily when the calendar is first opened or restored.
+- Use Obsidian's side-leaf API while preserving the user's chosen leaf location across plugin reloads.
+- Replace the `builtin-modules` package with Node's built-in module list for build configuration.
+- Remove all `!important` declarations in favor of scoped CSS selectors.
+- Set the minimum supported Obsidian version to `1.7.2`, matching the APIs used by the plugin.
+
+### Fixed
+
+- Respect the configured note opening location for notes shown in week view.
+- Remove an unnecessary frontmatter type assertion reported by the submission review.
+
 ## [0.2.0] - 2026-07-30
 
 ### Added
@@ -43,7 +64,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Responsive desktop and mobile layouts.
 - Incremental metadata index and keyboard navigation.
 
-[Unreleased]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.2.0...0.3.0
 [0.2.0]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.1.1...0.2.0
 [0.1.1]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/goodjinc/obsidian-calendar-of-notes/releases/tag/0.1.0
