@@ -1,0 +1,44 @@
+{
+  "name": "calendar-of-notes",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An Obsidian calendar for browsing notes by date.",
+  "author": "goodjinc",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/goodjinc/obsidian-calendar-of-notes.git"
+  },
+  "bugs": {
+    "url": "https://github.com/goodjinc/obsidian-calendar-of-notes/issues"
+  },
+  "homepage": "https://github.com/goodjinc/obsidian-calendar-of-notes#readme",
+  "type": "module",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "tsc --noEmit --skipLibCheck && node esbuild.config.mjs production",
+    "bump-version": "node version-bump.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .ts"
+  },
+  "keywords": [
+    "obsidian",
+    "calendar",
+    "notes",
+    "date"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.1.0",
+    "builtin-modules": "^4.0.0",
+    "esbuild": "^0.25.8",
+    "eslint": "^10.8.0",
+    "globals": "^17.8.0",
+    "obsidian": "^1.8.7",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.38.0",
+    "vitest": "^3.2.4"
+  }
+}

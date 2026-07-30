@@ -1,0 +1,505 @@
+.calendar-of-notes-view {
+  --con-accent: var(--interactive-accent);
+  --con-muted: var(--text-muted);
+  --con-hover: var(--background-modifier-hover);
+  --con-border: var(--background-modifier-border);
+  padding: 0 !important;
+}
+
+.calendar-of-notes-root {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  height: 100%;
+  overflow: auto;
+  padding: 10px;
+}
+
+.calendar-of-notes-toolbar,
+.calendar-of-notes-actions,
+.calendar-of-notes-picker-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.calendar-of-notes-toolbar {
+  display: flex;
+  width: 100%;
+}
+
+.calendar-of-notes-toolbar button,
+.calendar-of-notes-actions button,
+.calendar-of-notes-picker-nav button,
+.calendar-of-notes-picker-grid button {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.calendar-of-notes-toolbar button:hover,
+.calendar-of-notes-actions button:hover,
+.calendar-of-notes-picker-nav button:hover,
+.calendar-of-notes-picker-grid button:hover {
+  background: var(--con-hover);
+}
+
+.calendar-of-notes-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 120px;
+  padding-inline: 12px;
+  overflow: visible;
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-semibold);
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.calendar-of-notes-actions {
+  justify-content: flex-end;
+  margin: 6px 0 8px;
+}
+
+.calendar-of-notes-actions > button,
+.calendar-of-notes-toolbar > button:not(.calendar-of-notes-title) {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+}
+
+.calendar-of-notes-title {
+  height: 32px;
+}
+
+.calendar-of-notes-view-switcher {
+  display: flex;
+  margin-right: auto;
+  padding: 2px;
+  border: 1px solid var(--con-border);
+  border-radius: var(--radius-s);
+}
+
+.calendar-of-notes-view-switcher button {
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  color: var(--con-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.calendar-of-notes-view-switcher button.is-active {
+  background: var(--background-modifier-active-hover);
+  color: var(--text-normal);
+}
+
+.calendar-of-notes-weekdays,
+.calendar-of-notes-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-of-notes-month-grid {
+  gap: 1px;
+  padding: 1px;
+  overflow: hidden;
+  border-radius: var(--radius-m);
+  background: var(--con-border);
+}
+
+.calendar-of-notes-weekdays span {
+  padding: 5px 0;
+  color: var(--con-muted);
+  font-size: var(--font-ui-smaller);
+  text-align: center;
+}
+
+.calendar-of-notes-day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 42px;
+  padding: 5px 2px 3px;
+  border: 0 !important;
+  border-radius: 0;
+  background: var(--background-primary) !important;
+  box-shadow: none !important;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  line-height: 1.25;
+  transition: background-color 80ms ease, color 80ms ease;
+}
+
+.calendar-of-notes-day:hover,
+.calendar-of-notes-mini-day:hover {
+  background: var(--con-hover) !important;
+}
+
+.calendar-of-notes-day.is-today,
+.calendar-of-notes-mini-day.is-today {
+  outline: 1px solid var(--con-accent);
+  outline-offset: -2px;
+}
+
+.calendar-of-notes-day.is-selected,
+.calendar-of-notes-mini-day.is-selected {
+  background: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+}
+
+.calendar-of-notes-day.is-selected:hover,
+.calendar-of-notes-mini-day.is-selected:hover {
+  background: var(--interactive-accent-hover) !important;
+}
+
+.calendar-of-notes-day.is-adjacent {
+  color: var(--text-faint);
+}
+
+.calendar-of-notes-day.is-hidden-adjacent {
+  visibility: hidden;
+}
+
+.calendar-of-notes-markers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 8px;
+  margin-top: auto;
+  gap: 2px;
+}
+
+.calendar-of-notes-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  color: var(--con-accent);
+}
+
+.is-selected .calendar-of-notes-dot {
+  color: var(--text-on-accent);
+}
+
+.calendar-of-notes-plus {
+  color: currentColor;
+  font-size: 9px;
+  line-height: 1;
+}
+
+.calendar-of-notes-week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(92px, 1fr));
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.calendar-of-notes-week-card {
+  min-height: 150px;
+  padding: 6px;
+  border: 1px solid var(--con-border);
+  border-radius: var(--radius-m);
+  background: var(--background-primary);
+  box-shadow: none;
+}
+
+.calendar-of-notes-weekday-name {
+  color: var(--con-muted);
+  font-size: var(--font-ui-smaller);
+  text-align: center;
+}
+
+.calendar-of-notes-week-card .calendar-of-notes-day {
+  width: 100%;
+}
+
+.calendar-of-notes-week-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.calendar-of-notes-week-preview button {
+  overflow: hidden;
+  padding: 3px 4px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-of-notes-more {
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+  text-align: center;
+}
+
+.calendar-of-notes-year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px 12px;
+}
+
+.calendar-of-notes-mini-month {
+  min-width: 0;
+  padding-bottom: 2px;
+}
+
+.calendar-of-notes-mini-title {
+  width: 100%;
+  min-height: 30px;
+  margin: 0 0 5px;
+  padding: 4px 6px;
+  border: 0 !important;
+  border-bottom: 1px solid var(--con-border) !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  line-height: 1.3;
+}
+
+.calendar-of-notes-mini-title:hover {
+  background: var(--con-hover) !important;
+}
+
+.calendar-of-notes-mini-weekdays,
+.calendar-of-notes-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-of-notes-mini-grid {
+  gap: 1px;
+  padding: 1px;
+  overflow: hidden;
+  border-radius: var(--radius-s);
+  background: var(--con-border);
+}
+
+.calendar-of-notes-mini-weekdays span {
+  color: var(--text-faint);
+  font-size: 9px;
+  text-align: center;
+}
+
+.calendar-of-notes-mini-day {
+  position: relative;
+  min-width: 0;
+  height: 24px;
+  padding: 0;
+  border: 0 !important;
+  border-radius: 0;
+  background: var(--background-primary) !important;
+  box-shadow: none !important;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.calendar-of-notes-mini-blank {
+  display: block;
+  min-width: 0;
+  height: 24px;
+  background: var(--background-primary);
+}
+
+.calendar-of-notes-mini-day .calendar-of-notes-markers {
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+}
+
+.calendar-of-notes-mini-day .calendar-of-notes-dot {
+  width: 3px;
+  height: 3px;
+}
+
+.calendar-of-notes-list-region {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--con-border);
+}
+
+.calendar-of-notes-list-heading {
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+}
+
+.calendar-of-notes-note-list {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-top: 1px solid var(--con-border);
+  border-bottom: 1px solid var(--con-border);
+  border-radius: 0;
+  background: transparent;
+  list-style: none;
+}
+
+.calendar-of-notes-note-list li {
+  margin: 0;
+}
+
+.calendar-of-notes-note-list li + li {
+  border-top: 1px solid var(--con-border);
+}
+
+.calendar-of-notes-note-link {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  min-height: 38px;
+  margin: 0;
+  padding: 7px 10px;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-normal);
+  font: inherit;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.calendar-of-notes-note-link:hover {
+  background: var(--con-hover) !important;
+}
+
+.calendar-of-notes-note-name {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-of-notes-view .calendar-of-notes-note-link {
+  min-height: 34px;
+  padding: 6px 8px;
+  font-size: var(--font-ui-small);
+}
+
+.calendar-of-notes-view .calendar-of-notes-note-name {
+  font-size: var(--font-ui-small);
+}
+
+.calendar-of-notes-note-path,
+.calendar-of-notes-empty {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.calendar-of-notes-picker-nav {
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.calendar-of-notes-picker-nav button {
+  min-width: 36px;
+  min-height: 34px;
+}
+
+.calendar-of-notes-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.calendar-of-notes-picker-grid button {
+  min-height: 40px;
+}
+
+.calendar-of-notes-picker-grid button.is-selected {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.calendar-of-notes-pattern-input {
+  width: min(360px, 100%);
+  font-family: var(--font-monospace);
+}
+
+.calendar-of-notes-pattern-input.is-invalid {
+  border-color: var(--text-error);
+}
+
+.calendar-of-notes-settings-section {
+  margin: 28px 0 2px;
+  padding-bottom: 10px;
+  border: 0 !important;
+}
+
+.calendar-of-notes-settings-section:first-child {
+  margin-top: 8px;
+}
+
+.calendar-of-notes-settings-section .setting-item-name {
+  color: var(--text-normal);
+  font-size: var(--font-ui-medium);
+}
+
+.calendar-of-notes-settings-section .setting-item-description {
+  padding-top: 4px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.45;
+}
+
+@media (max-width: 400px) {
+  .calendar-of-notes-root {
+    padding: 8px 6px;
+  }
+
+  .calendar-of-notes-day {
+    min-height: 38px;
+    padding-inline: 1px;
+  }
+
+  .calendar-of-notes-week-grid {
+    grid-template-columns: 1fr;
+    overflow-x: visible;
+  }
+
+  .calendar-of-notes-week-card {
+    min-height: auto;
+  }
+}
+
+.is-mobile .calendar-of-notes-list-modal {
+  align-self: flex-end;
+  width: 100%;
+  max-width: none;
+  max-height: 72vh;
+  margin: 0;
+  border-radius: var(--radius-l) var(--radius-l) 0 0;
+}
+
+.is-mobile .calendar-of-notes-note-link,
+.is-mobile .calendar-of-notes-toolbar button,
+.is-mobile .calendar-of-notes-actions > button {
+  min-height: 40px;
+}
