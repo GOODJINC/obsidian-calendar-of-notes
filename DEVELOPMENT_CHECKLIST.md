@@ -15,7 +15,7 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Publish `0.1.1` as a non-pre-release after automated verification.
 - [x] Add common filename date formats, multiple date properties, folder/tag filters, and note open locations.
 - [x] Add migration coverage so existing `0.1.x` settings continue to work.
-- [ ] Publish and verify the `0.2.0` feature release.
+- [x] Publish and verify the `0.2.0` feature release.
 
 ## Local setup
 
@@ -95,11 +95,12 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Confirm `id` remains `calendar-of-notes`; plugin IDs cannot be changed after release.
 - [x] Confirm the display name and plugin ID are unique in the current community plugin registry.
 - [x] Choose and document Obsidian `1.5.0` as the supported minimum version.
-- [x] Keep `manifest.json`, `package.json`, and `versions.json` aligned for `0.1.0`.
+- [x] Keep `manifest.json`, `package.json`, and `versions.json` aligned through `0.2.0`.
 - [x] Produce a minified production `main.js` with `npm run build`.
 - [x] Create the GitHub `0.1.0` release with a tag matching the manifest version.
 - [x] Attach `main.js`, `manifest.json`, and `styles.css` to the GitHub release.
 - [x] Confirm the corrected release workflow on the `0.1.1` version tag.
+- [x] Publish the regular `0.2.0` release with release notes and all required assets.
 - [ ] Complete Obsidian's plugin self-critique checklist.
 - [ ] Submit the repository through the Obsidian Community Plugins portal.
 - [ ] Address automated and manual review feedback in a new patch release.
