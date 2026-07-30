@@ -1,7 +1,7 @@
 {
   "id": "calendar-of-notes",
   "name": "Calendar of Notes",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minAppVersion": "1.5.0",
   "description": "Browse and open your notes by date in a fast, compact calendar.",
   "author": "goodjinc",

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-30
+
+### Fixed
+
+- Made tagged releases work when `RELEASE_NOTES.md` is absent by using GitHub-generated notes.
+- Made release retries update an existing release and replace its assets instead of failing.
+- Updated the release workflow to GitHub Actions running on Node.js 24.
+
 ## [0.1.0] - 2026-07-30
 
 ### Added
@@ -20,5 +28,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Responsive desktop and mobile layouts.
 - Incremental metadata index and keyboard navigation.
 
-[Unreleased]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.1.0...HEAD
+[Unreleased]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.1.1...HEAD
+[0.1.1]: https://github.com/goodjinc/obsidian-calendar-of-notes/compare/0.1.0...0.1.1
 [0.1.0]: https://github.com/goodjinc/obsidian-calendar-of-notes/releases/tag/0.1.0
