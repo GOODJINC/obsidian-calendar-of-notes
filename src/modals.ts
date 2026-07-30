@@ -1,6 +1,7 @@
 import { Modal, Notice, Setting, TFile, type App } from "obsidian";
 import { daysInMonth, formatDateInput, parseCalendarDate, parseIsoDate, toIsoDate } from "./date-utils";
 import { intlLocale, t } from "./i18n";
+import { resolveLeafOpenTarget } from "./open-location";
 import type { CalendarOfNotesSettings, NoteEntry } from "./types";
 
 export class NoteListModal extends Modal {
@@ -147,11 +148,20 @@ export function renderNoteList(
     const button = item.createEl("button", { cls: "calendar-of-notes-note-link" });
     button.createSpan({ cls: "calendar-of-notes-note-name", text: entry.file.basename });
     if (settings.showNotePaths) button.createSpan({ cls: "calendar-of-notes-note-path", text: parentPath(entry.file) });
-    button.onclick = () => {
-      void app.workspace.getLeaf(false).openFile(entry.file);
+    button.onclick = (event) => {
+      openNote(app, settings, entry.file, event.metaKey || event.ctrlKey);
       afterOpen?.();
     };
   }
+}
+
+export function openNote(
+  app: App,
+  settings: CalendarOfNotesSettings,
+  file: TFile,
+  forceNewTab = false
+): void {
+  void app.workspace.getLeaf(resolveLeafOpenTarget(settings.openLocation, forceNewTab)).openFile(file);
 }
 
 export function formatLongDate(iso: string, settings: CalendarOfNotesSettings): string {

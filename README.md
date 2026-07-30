@@ -18,8 +18,11 @@ Calendar of Notes indexes dates from filenames, note properties, or both. Select
 - Note lists below the calendar, in a popup, or completely hidden
 - Up to three activity dots and a `+` indicator for dates with more notes
 - Dates from filenames, frontmatter properties, property-first fallback, or both sources
-- Simple filename date-position choices, with custom regular expressions available as an advanced option
-- Excluded folders, note sorting, optional paths, and configurable week start
+- Four filename date formats, simple position choices, and advanced custom patterns
+- Multiple frontmatter date properties
+- Included and excluded folder or tag filters
+- Configurable note opening in the current tab, a new tab, or a new split
+- Note sorting, optional paths, and configurable week start
 - English and Korean interface with automatic locale detection
 - Responsive desktop and mobile layouts with keyboard navigation
 - Incremental in-memory indexing using Obsidian's Vault and Metadata Cache events
@@ -68,29 +71,37 @@ The date jump accepts either `YYYY-MM-DD` or eight digits such as `20260730`.
 
 The default strategy is **Property, then filename**:
 
-1. Use the configured frontmatter property when it contains a valid date.
-2. If that property is missing or invalid, extract a date from the filename.
+1. Use valid dates from the configured frontmatter properties.
+2. If none of those properties contains a valid date, extract a date from the filename.
 
 ### Property example
 
 ```yaml
 ---
 date: 2026-07-30
+created: 2026-07-29
+published:
+  - 2026-08-01
 ---
 ```
 
-The property name is configurable. ISO date-time values such as `2026-07-30T15:30:00+09:00` use the written calendar date without UTC conversion.
+Enter one property name per line. Valid dates from every configured property are included. ISO date-time values such as `2026-07-30T15:30:00+09:00` use the written calendar date without UTC conversion.
 
 ### Filename examples
 
-| Date position | Matching example |
+| Date format | Matching example |
 | --- | --- |
-| At the beginning | `2026-07-30 Note title.md` |
-| Anywhere | `Meeting notes 2026-07-30.md` |
-| Entire filename | `2026-07-30.md` |
-| Custom pattern | Advanced regular expression |
+| `YYYY-MM-DD` | `2026-07-30 Note title.md` |
+| `YYYY.MM.DD` | `2026.07.30 Note title.md` |
+| `YYYY_MM_DD` | `2026_07_30 Note title.md` |
+| `YYYYMMDD` | `20260730 Note title.md` |
+| Custom pattern | Advanced regular expression with an ISO-date capture |
 
-Calendar of Notes accepts strict ISO calendar dates in `YYYY-MM-DD` format. Invalid dates such as `2026-02-29` are ignored.
+For built-in formats, choose whether the date appears at the beginning, anywhere, or as the entire filename. Every matched date is normalized to `YYYY-MM-DD`. Invalid dates such as `2026-02-29` are ignored.
+
+## Filters
+
+You can optionally include or exclude notes by vault-relative folder and tag. Enter one value per line. Folder rules include descendants, and a tag such as `project` also matches `project/calendar`. Exclusions take priority over inclusions.
 
 ## Date click behavior
 
@@ -102,13 +113,16 @@ Calendar of Notes accepts strict ISO calendar dates in `YYYY-MM-DD` format. Inva
 
 The note list can appear below the calendar, in a popup, or remain hidden. On mobile, popup lists use a bottom-sheet layout.
 
+Notes opened directly or from a list can use the current tab, a new tab, or a new split. Ctrl-click or Command-click always opens a new tab.
+
 ## Settings
 
-Settings are grouped into four sections:
+Settings are grouped into five sections:
 
 - **General:** language, default view, and startup date
-- **Date matching:** date source, property name, filename format, and excluded folders
-- **Behavior:** date click action, list placement, and note sorting
+- **Date matching:** date source, multiple property names, filename format, and date position
+- **Filters:** included and excluded folders or tags
+- **Behavior:** date click action, list placement, note sorting, and note opening location
 - **Display:** week start, adjacent-month dates, and note paths
 
 ## Privacy and permissions
@@ -127,7 +141,7 @@ Plugin settings are stored through Obsidian's standard plugin data API.
 
 Requirements:
 
-- Node.js 18 or later
+- Node.js 24 or later
 - npm
 - A separate Obsidian development vault
 

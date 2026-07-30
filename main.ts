@@ -3,6 +3,7 @@ import { CalendarOfNotesView, CALENDAR_VIEW_TYPE } from "./src/calendar-view";
 import { todayIso } from "./src/date-utils";
 import { t } from "./src/i18n";
 import { NoteDateIndex } from "./src/note-index";
+import { migrateSettings } from "./src/settings-migration";
 import { CalendarOfNotesSettingTab } from "./src/settings-tab";
 import { DEFAULT_SETTINGS, type CalendarOfNotesSettings } from "./src/types";
 
@@ -88,15 +89,7 @@ export default class CalendarOfNotesPlugin extends Plugin {
   }
 
   private async loadSettings(): Promise<void> {
-    const stored = (await this.loadData()) as Partial<CalendarOfNotesSettings> | null;
-    this.settings = { ...DEFAULT_SETTINGS, ...(stored ?? {}) };
-    if (!stored?.filenameDateLocation && stored?.filenamePattern && stored.filenamePattern !== DEFAULT_SETTINGS.filenamePattern) {
-      this.settings.filenameDateLocation = "custom";
-    }
-    if (!["start", "anywhere", "entire", "custom"].includes(this.settings.filenameDateLocation)) {
-      this.settings.filenameDateLocation = DEFAULT_SETTINGS.filenameDateLocation;
-    }
-    if (!Array.isArray(this.settings.excludedFolders)) this.settings.excludedFolders = [...DEFAULT_SETTINGS.excludedFolders];
+    this.settings = migrateSettings(await this.loadData());
   }
 
   private refreshViews(): void {

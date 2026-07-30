@@ -13,6 +13,9 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Push the workflow fix and confirm it with the `0.1.1` patch-version tag.
 - [ ] Finish the priority manual QA items below before submitting to Community Plugins.
 - [x] Publish `0.1.1` as a non-pre-release after automated verification.
+- [x] Add common filename date formats, multiple date properties, folder/tag filters, and note open locations.
+- [x] Add migration coverage so existing `0.1.x` settings continue to work.
+- [ ] Publish and verify the `0.2.0` feature release.
 
 ## Local setup
 
@@ -27,9 +30,9 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Run `npm run build` without TypeScript errors.
 - [x] Run `npm test` without failures.
 - [x] Run `npm run lint` and address actionable warnings.
-- [ ] Add NoteDateIndex unit tests with mocked Vault and MetadataCache objects.
+- [x] Add NoteDateIndex unit tests with mocked Vault and MetadataCache objects.
 - [ ] Add interaction tests for smart open, popup, hidden, and below-calendar list modes.
-- [ ] Add regression tests for leap years, month boundaries, and time-zone-bearing date-time values.
+- [x] Add regression tests for leap years, month boundaries, and time-zone-bearing date-time values.
 - [ ] Measure initial index time with 1,000, 10,000, and 50,000 Markdown files.
 
 ## Desktop manual QA
@@ -105,8 +108,8 @@ This checklist covers the work needed after the initial implementation and befor
 
 - [ ] Gather feedback before adding note creation.
 - [ ] If note creation is added, support templates, target folders, conflicts, and safe filename normalization.
-- [ ] Consider multiple configurable date properties.
-- [ ] Consider saved folder/tag filters without requiring Dataview.
+- [x] Add multiple configurable date properties.
+- [x] Add persistent folder/tag filters without requiring Dataview.
 - [ ] Consider week numbers as an optional display feature.
 - [ ] Consider per-source marker colors while preserving theme compatibility and accessibility.
 - [ ] Consider an optional Bases calendar view after the standalone view is stable.

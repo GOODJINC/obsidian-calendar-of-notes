@@ -1,6 +1,6 @@
 {
   "name": "calendar-of-notes",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "description": "An Obsidian calendar for browsing notes by date.",
   "author": "goodjinc",

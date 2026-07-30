@@ -1,6 +1,7 @@
-import { Events, TFile, normalizePath, type App } from "obsidian";
-import { parseIsoDate } from "./date-utils";
-import { resolveFilenamePattern } from "./filename-pattern";
+import { Events, TFile, getAllTags, type App } from "obsidian";
+import { extractPropertyDates } from "./date-properties";
+import { extractFilenameDate, resolveFilenamePattern } from "./filename-pattern";
+import { matchesNoteFilters } from "./note-filter";
 import type { CalendarOfNotesSettings, NoteEntry } from "./types";
 
 export class NoteDateIndex extends Events {
@@ -26,7 +27,7 @@ export class NoteDateIndex extends Events {
 
   indexFile(file: TFile, notify = true): void {
     this.removePath(file.path, false);
-    if (this.isExcluded(file.path)) {
+    if (!this.isIncluded(file)) {
       if (notify) this.trigger("changed", file.path);
       return;
     }
@@ -96,42 +97,31 @@ export class NoteDateIndex extends Events {
   private extractFilenameDates(file: TFile): Set<string> {
     const dates = new Set<string>();
     if (!this.filenameRegex) return dates;
-    this.filenameRegex.lastIndex = 0;
-    const match = this.filenameRegex.exec(file.basename);
-    const candidate = match?.groups?.date ?? match?.[1] ?? match?.[0];
-    const date = parseIsoDate(candidate);
+    const date = extractFilenameDate(file.basename, this.filenameRegex, this.getSettings().filenameDateFormat);
     if (date) dates.add(date);
     return dates;
   }
 
   private extractPropertyDates(file: TFile): Set<string> {
-    const dates = new Set<string>();
-    const propertyName = this.getSettings().propertyName.trim();
-    if (!propertyName) return dates;
-    const value = this.app.metadataCache.getFileCache(file)?.frontmatter?.[propertyName];
-    const values = Array.isArray(value) ? value : [value];
-    for (const item of values) {
-      const date = parseIsoDate(item);
-      if (date) dates.add(date);
-    }
-    return dates;
+    const frontmatter = this.app.metadataCache.getFileCache(file)?.frontmatter as Record<string, unknown> | undefined;
+    return extractPropertyDates(frontmatter, this.getSettings().propertyNames);
   }
 
   private compileFilenamePattern(): void {
     try {
       const settings = this.getSettings();
-      this.filenameRegex = new RegExp(resolveFilenamePattern(settings.filenameDateLocation, settings.filenamePattern));
+      this.filenameRegex = new RegExp(resolveFilenamePattern(
+        settings.filenameDateLocation,
+        settings.filenameDateFormat,
+        settings.filenamePattern
+      ));
     } catch {
       this.filenameRegex = null;
     }
   }
 
-  private isExcluded(path: string): boolean {
-    const normalizedPath = normalizePath(path);
-    return this.getSettings().excludedFolders.some((folder) => {
-      const normalizedFolder = normalizePath(folder.trim()).replace(/\/$/, "");
-      return normalizedFolder.length > 0 &&
-        (normalizedPath === normalizedFolder || normalizedPath.startsWith(`${normalizedFolder}/`));
-    });
+  private isIncluded(file: TFile): boolean {
+    const cache = this.app.metadataCache.getFileCache(file);
+    return matchesNoteFilters(file.path, cache ? getAllTags(cache) ?? [] : [], this.getSettings());
   }
 }

@@ -1,7 +1,7 @@
 import { Notice, PluginSettingTab, Setting, type App } from "obsidian";
 import { t, type MessageKey } from "./i18n";
 import type CalendarOfNotesPlugin from "../main";
-import type { FilenameDateLocation } from "./types";
+import type { FilenameDateFormat, FilenameDateLocation } from "./types";
 
 export class CalendarOfNotesSettingTab extends PluginSettingTab {
   constructor(app: App, private readonly plugin: CalendarOfNotesPlugin) {
@@ -61,30 +61,46 @@ export class CalendarOfNotesSettingTab extends PluginSettingTab {
 
     if (settings.dateSource !== "filename") {
       new Setting(containerEl)
-        .setName(t(settings, "settingsProperty"))
-        .setDesc(t(settings, "settingsPropertyDesc"))
-        .addText((text) => text
-          .setPlaceholder("date")
-          .setValue(settings.propertyName)
-          .onChange((value) => this.plugin.scheduleSettingsUpdate({ propertyName: value.trim() }, true)));
+        .setName(t(settings, "settingsProperties"))
+        .setDesc(t(settings, "settingsPropertiesDesc"))
+        .addTextArea((text) => {
+          text.setPlaceholder("date\ncreated\npublished");
+          text.setValue(settings.propertyNames.join("\n"));
+          text.inputEl.rows = 3;
+          text.onChange((value) => this.plugin.scheduleSettingsUpdate({
+            propertyNames: splitLines(value)
+          }, true));
+        });
     }
 
     if (settings.dateSource !== "property") {
-      const examples: Record<FilenameDateLocation, string> = {
-        start: "2026-07-30 Note title",
-        anywhere: "Meeting notes 2026-07-30",
-        entire: "2026-07-30",
-        custom: "^(?<date>\\d{4}-\\d{2}-\\d{2})"
-      };
+      new Setting(containerEl)
+        .setName(t(settings, "settingsFilenameFormat"))
+        .setDesc(t(settings, "settingsFilenameFormatDesc"))
+        .addDropdown((dropdown) => dropdown
+          .addOptions({
+            "yyyy-mm-dd": "YYYY-MM-DD",
+            "yyyy.mm.dd": "YYYY.MM.DD",
+            "yyyy_mm_dd": "YYYY_MM_DD",
+            yyyymmdd: "YYYYMMDD",
+            custom: t(settings, "dateCustom")
+          })
+          .setValue(settings.filenameDateFormat)
+          .onChange(async (value) => {
+            await this.plugin.updateSettings({ filenameDateFormat: value as FilenameDateFormat }, true);
+            this.display();
+          }));
+    }
+
+    if (settings.dateSource !== "property" && settings.filenameDateFormat !== "custom") {
       new Setting(containerEl)
         .setName(t(settings, "settingsFilenameLocation"))
-        .setDesc(`${t(settings, "settingsFilenameLocationDesc")} ${t(settings, "example")}: ${examples[settings.filenameDateLocation]}`)
+        .setDesc(`${t(settings, "settingsFilenameLocationDesc")} ${t(settings, "example")}: ${filenameExample(settings.filenameDateFormat, settings.filenameDateLocation)}`)
         .addDropdown((dropdown) => dropdown
           .addOptions({
             start: t(settings, "dateAtStart"),
             anywhere: t(settings, "dateAnywhere"),
-            entire: t(settings, "dateEntireName"),
-            custom: t(settings, "dateCustom")
+            entire: t(settings, "dateEntireName")
           })
           .setValue(settings.filenameDateLocation)
           .onChange(async (value) => {
@@ -93,7 +109,7 @@ export class CalendarOfNotesSettingTab extends PluginSettingTab {
           }));
     }
 
-    if (settings.dateSource !== "property" && settings.filenameDateLocation === "custom") {
+    if (settings.dateSource !== "property" && settings.filenameDateFormat === "custom") {
       new Setting(containerEl)
         .setName(t(settings, "settingsPattern"))
         .setDesc(t(settings, "settingsPatternDesc"))
@@ -114,6 +130,17 @@ export class CalendarOfNotesSettingTab extends PluginSettingTab {
         });
     }
 
+    this.addSection("sectionFilters", "sectionFiltersDesc");
+
+    new Setting(containerEl)
+      .setName(t(settings, "settingsIncluded"))
+      .setDesc(t(settings, "settingsIncludedDesc"))
+      .addTextArea((text) => {
+        text.setValue(settings.includedFolders.join("\n"));
+        text.inputEl.rows = 3;
+        text.onChange((value) => this.plugin.scheduleSettingsUpdate({ includedFolders: splitLines(value) }, true));
+      });
+
     new Setting(containerEl)
       .setName(t(settings, "settingsExcluded"))
       .setDesc(t(settings, "settingsExcludedDesc"))
@@ -121,8 +148,28 @@ export class CalendarOfNotesSettingTab extends PluginSettingTab {
         text.setValue(settings.excludedFolders.join("\n"));
         text.inputEl.rows = 4;
         text.onChange((value) => this.plugin.scheduleSettingsUpdate({
-          excludedFolders: value.split(/\r?\n/).map((folder) => folder.trim()).filter(Boolean)
+          excludedFolders: splitLines(value)
         }, true));
+      });
+
+    new Setting(containerEl)
+      .setName(t(settings, "settingsIncludedTags"))
+      .setDesc(t(settings, "settingsIncludedTagsDesc"))
+      .addTextArea((text) => {
+        text.setPlaceholder("project\ncalendar");
+        text.setValue(settings.includedTags.join("\n"));
+        text.inputEl.rows = 3;
+        text.onChange((value) => this.plugin.scheduleSettingsUpdate({ includedTags: splitLines(value) }, true));
+      });
+
+    new Setting(containerEl)
+      .setName(t(settings, "settingsExcludedTags"))
+      .setDesc(t(settings, "settingsExcludedTagsDesc"))
+      .addTextArea((text) => {
+        text.setPlaceholder("archive\nprivate");
+        text.setValue(settings.excludedTags.join("\n"));
+        text.inputEl.rows = 3;
+        text.onChange((value) => this.plugin.scheduleSettingsUpdate({ excludedTags: splitLines(value) }, true));
       });
 
     this.addSection("sectionBehavior", "sectionBehaviorDesc");
@@ -147,6 +194,18 @@ export class CalendarOfNotesSettingTab extends PluginSettingTab {
         .addOptions({ name: t(settings, "name"), modified: t(settings, "modified"), created: t(settings, "created"), path: t(settings, "path") })
         .setValue(settings.noteSort)
         .onChange((value) => this.plugin.updateSettings({ noteSort: value as typeof settings.noteSort }, false)));
+
+    new Setting(containerEl)
+      .setName(t(settings, "settingsOpenLocation"))
+      .setDesc(t(settings, "settingsOpenLocationDesc"))
+      .addDropdown((dropdown) => dropdown
+        .addOptions({
+          current: t(settings, "openCurrent"),
+          tab: t(settings, "openTab"),
+          split: t(settings, "openSplit")
+        })
+        .setValue(settings.openLocation)
+        .onChange((value) => this.plugin.updateSettings({ openLocation: value as typeof settings.openLocation }, false)));
 
     this.addSection("sectionDisplay", "sectionDisplayDesc");
 
@@ -177,4 +236,20 @@ export class CalendarOfNotesSettingTab extends PluginSettingTab {
       .setHeading();
     heading.settingEl.addClass("calendar-of-notes-settings-section");
   }
+}
+
+function splitLines(value: string): string[] {
+  return [...new Set(value.split(/\r?\n/).map((item) => item.trim()).filter(Boolean))];
+}
+
+function filenameExample(format: Exclude<FilenameDateFormat, "custom">, location: FilenameDateLocation): string {
+  const date = {
+    "yyyy-mm-dd": "2026-07-30",
+    "yyyy.mm.dd": "2026.07.30",
+    "yyyy_mm_dd": "2026_07_30",
+    yyyymmdd: "20260730"
+  }[format];
+  if (location === "start") return `${date} Note title`;
+  if (location === "anywhere") return `Meeting ${date} notes`;
+  return date;
 }

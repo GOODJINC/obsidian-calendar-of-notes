@@ -10,7 +10,7 @@ import {
   toIsoDate
 } from "./date-utils";
 import { intlLocale, t } from "./i18n";
-import { JumpToDateModal, NoteListModal, PeriodPickerModal, clampDay, formatLongDate, renderNoteList } from "./modals";
+import { JumpToDateModal, NoteListModal, PeriodPickerModal, clampDay, formatLongDate, openNote, renderNoteList } from "./modals";
 import type { NoteDateIndex } from "./note-index";
 import type { CalendarOfNotesSettings, CalendarViewMode } from "./types";
 
@@ -241,7 +241,7 @@ export class CalendarOfNotesView extends ItemView {
     const behavior = this.host.settings.clickBehavior;
 
     if (behavior === "smart" && entries.length === 1) {
-      void this.app.workspace.getLeaf(event.metaKey || event.ctrlKey ? "tab" : false).openFile(entries[0].file);
+      openNote(this.app, this.host.settings, entries[0].file, event.metaKey || event.ctrlKey);
     } else if (behavior === "list" || (behavior === "smart" && entries.length > 1)) {
       this.showList(date);
     }
