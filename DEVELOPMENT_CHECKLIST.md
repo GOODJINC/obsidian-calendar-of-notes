@@ -20,7 +20,7 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Add dual declarative/legacy settings support and pass the Obsidian validator with zero findings.
 - [x] Remove CSS `!important` declarations and add automated CSS compatibility checks.
 - [x] Add artifact attestations for all release assets.
-- [ ] Publish and verify the `0.3.0` review-fix release.
+- [x] Publish and verify the `0.3.0` review-fix release, including artifact attestations for all three assets.
 
 ## Local setup
 
