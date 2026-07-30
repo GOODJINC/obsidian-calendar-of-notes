@@ -10,9 +10,9 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Make the tagged release workflow tolerate a missing `RELEASE_NOTES.md` file.
 - [x] Make the tagged release workflow safely update an existing release and replace its assets.
 - [x] Update GitHub Actions and the release build to the Node.js 24 runtime.
-- [ ] Push the workflow fix and confirm it with the next patch-version tag.
+- [x] Push the workflow fix and confirm it with the `0.1.1` patch-version tag.
 - [ ] Finish the priority manual QA items below before submitting to Community Plugins.
-- [ ] Publish a non-pre-release version after beta verification.
+- [x] Publish `0.1.1` as a non-pre-release after automated verification.
 
 ## Local setup
 
@@ -96,7 +96,7 @@ This checklist covers the work needed after the initial implementation and befor
 - [x] Produce a minified production `main.js` with `npm run build`.
 - [x] Create the GitHub `0.1.0` release with a tag matching the manifest version.
 - [x] Attach `main.js`, `manifest.json`, and `styles.css` to the GitHub release.
-- [ ] Confirm the corrected release workflow on the next version tag.
+- [x] Confirm the corrected release workflow on the `0.1.1` version tag.
 - [ ] Complete Obsidian's plugin self-critique checklist.
 - [ ] Submit the repository through the Obsidian Community Plugins portal.
 - [ ] Address automated and manual review feedback in a new patch release.
